@@ -292,26 +292,17 @@
   <!-- ── PROFILE ── -->
   <div class="section-label">Din profil</div>
   <div class="profile-strip">
-    <div class="row3">
-      <div class="field">
-        <label>Navn</label>
-        <input type="text" id="p-name" placeholder="Ditt navn" oninput="saveProfile()">
-      </div>
-      <div class="field">
-        <label>Lag</label>
-        <input type="text" id="p-team" placeholder="F.eks Sørbø G11" oninput="saveProfile()">
-      </div>
-      <div class="field">
-        <label>Kontonr.</label>
-        <input type="text" id="p-account" placeholder="1234.56.78901" inputmode="numeric" oninput="saveProfile()">
-      </div>
+    <div class="field">
+      <label>Navn</label>
+      <input type="text" id="p-name" placeholder="Ditt navn" oninput="saveProfile()">
     </div>
-    <div class="row2b">
-      <div class="field">
-        <label>Din e-post</label>
-        <input type="email" id="p-email" placeholder="din@epost.no" oninput="saveProfile()">
-      </div>
-
+    <div class="field">
+      <label>Lag</label>
+      <input type="text" id="p-team" placeholder="F.eks Sørbø G11" oninput="saveProfile()">
+    </div>
+    <div class="field">
+      <label>Kontonr.</label>
+      <input type="text" id="p-account" placeholder="1234.56.78901" inputmode="numeric" oninput="saveProfile()">
     </div>
     <div class="profile-hint">💾 Lagres automatisk på enheten din</div>
   </div>
@@ -319,15 +310,13 @@
   <!-- ── KAMP ── -->
   <div class="section-label">Kampinfo</div>
   <div class="card">
-    <div class="row2">
-      <div class="field">
-        <label>Dato</label>
-        <input type="date" id="match-date">
-      </div>
-      <div class="field">
-        <label>Motstander</label>
-        <input type="text" id="opponent" placeholder="f.eks. Stavanger">
-      </div>
+    <div class="field">
+      <label>Dato</label>
+      <input type="date" id="match-date">
+    </div>
+    <div class="field">
+      <label>Motstander</label>
+      <input type="text" id="opponent" placeholder="f.eks. Stavanger">
     </div>
   </div>
 
@@ -337,15 +326,13 @@
 
     <div class="ref-card">
       <div class="ref-card-title">Dommer 1</div>
-      <div class="row2">
-        <div class="field">
-          <label>Navn</label>
-          <input type="text" id="ref1-name" placeholder="Fullt navn">
-        </div>
-        <div class="field">
-          <label>Beløp (NOK)</label>
-          <input type="number" id="ref1-amount" placeholder="0" inputmode="decimal">
-        </div>
+      <div class="field">
+        <label>Navn</label>
+        <input type="text" id="ref1-name" placeholder="Fullt navn">
+      </div>
+      <div class="field">
+        <label>Beløp (NOK)</label>
+        <input type="number" id="ref1-amount" placeholder="0" inputmode="decimal">
       </div>
       <div class="coverage-row">
         <label class="toggle">
@@ -358,15 +345,13 @@
 
     <div id="ref2-block" class="ref-card">
       <div class="ref-card-title">Dommer 2</div>
-      <div class="row2">
-        <div class="field">
-          <label>Navn</label>
-          <input type="text" id="ref2-name" placeholder="Fullt navn">
-        </div>
-        <div class="field">
-          <label>Beløp (NOK)</label>
-          <input type="number" id="ref2-amount" placeholder="0" inputmode="decimal">
-        </div>
+      <div class="field">
+        <label>Navn</label>
+        <input type="text" id="ref2-name" placeholder="Fullt navn">
+      </div>
+      <div class="field">
+        <label>Beløp (NOK)</label>
+        <input type="number" id="ref2-amount" placeholder="0" inputmode="decimal">
       </div>
     </div>
 
@@ -411,12 +396,12 @@
 <script>
 // ── PROFILE (auto-save) ───────────────────────────────────────────
 function saveProfile() {
-  ['p-name','p-team','p-account','p-email'].forEach(id => {
+  ['p-name','p-team','p-account'].forEach(id => {
     localStorage.setItem(id, document.getElementById(id).value);
   });
 }
 function loadProfile() {
-  ['p-name','p-team','p-account','p-email'].forEach(id => {
+  ['p-name','p-team','p-account'].forEach(id => {
     document.getElementById(id).value = localStorage.getItem(id) || '';
   });
 
@@ -518,7 +503,6 @@ async function generateAndSend() {
   const name    = document.getElementById('p-name').value.trim();
   const team    = document.getElementById('p-team').value.trim();
   const acct    = document.getElementById('p-account').value.trim();
-  const email   = document.getElementById('p-email').value.trim();
   const date    = document.getElementById('match-date').value;
   const opp     = document.getElementById('opponent').value.trim();
   const ref1n   = document.getElementById('ref1-name').value.trim();
@@ -565,7 +549,6 @@ async function generateAndSend() {
 
   y += 21;
   drawField('Kontonummer', acct, M, y, 80);
-  drawField('E-post', email, M+88, y, 96);
 
   y += 21;
   drawField('Motstander', opp||'–', M, y, 60);
