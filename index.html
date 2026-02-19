@@ -451,6 +451,10 @@ let drawing = false, hasSig = false;
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
+  // Save existing signature before resizing
+  const snapshot = hasSig ? canvas.toDataURL() : null;
+  const oldW = canvas.getBoundingClientRect().width;
+  const oldH = canvas.getBoundingClientRect().height;
   canvas.width  = rect.width  * dpr;
   canvas.height = rect.height * dpr;
   ctx.setTransform(1,0,0,1,0,0);
@@ -459,6 +463,14 @@ function resizeCanvas() {
   ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
+  // Restore signature if there was one
+  if (snapshot) {
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, rect.width, rect.height);
+    };
+    img.src = snapshot;
+  }
 }
 function getP(e) {
   const r = canvas.getBoundingClientRect();
