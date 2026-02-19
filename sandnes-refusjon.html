@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sandnes IBK – Refusjon</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --yellow: #F5C800;
+    --yellow-dim: #c9a400;
+    --black: #0a0a0a;
+    --dark: #141414;
+    --card: #1e1e1e;
+    --border: #3a3a3a;
+    --text: #ffffff;
+    --muted: #aaaaaa;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    padding-bottom: 70px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--black);
+    border-bottom: 3px solid var(--yellow);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  header img { height: 42px; width: auto; }
+  .hdr-text {}
+  .hdr-club {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.45rem;
+    letter-spacing: 0.06em;
+    color: var(--white);
+    line-height: 1;
+  }
+  .hdr-sub {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-top: 2px;
+  }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 520px; margin: 0 auto; padding: 0 15px; }
+
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.22em;
+    color: var(--yellow);
+    margin: 26px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 15px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #bbb;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  input, select {
+    width: 100%;
+    background: #0f0f0f;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    color: #ffffff;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.98rem;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.18s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus { border-color: var(--yellow); }
+  input::placeholder { color: #555; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23555' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── PROFILE STRIP ── */
+  .profile-strip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 10px 10px 0;
+    padding: 13px 15px;
+    margin-bottom: 0;
+  }
+  .profile-strip .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .profile-strip .row2b { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .profile-hint {
+    font-size: 0.72rem;
+    color: #aaa;
+    margin-top: 9px;
+    font-style: italic;
+  }
+
+  /* ── REF CARDS ── */
+  .ref-card {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 13px;
+    margin-bottom: 10px;
+    transition: opacity 0.2s;
+  }
+  .ref-card:last-child { margin-bottom: 0; }
+  .ref-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    color: #bbb;
+    margin-bottom: 11px;
+  }
+
+  /* ── TOGGLE ── */
+  .coverage-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 0.84rem;
+    color: #ccc;
+    line-height: 1.4;
+  }
+  .toggle { position: relative; width: 42px; height: 23px; flex-shrink: 0; margin-top: 1px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-track::after {
+    content: ''; position: absolute;
+    left: 3px; top: 3px;
+    width: 17px; height: 17px;
+    background: white; border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--yellow); }
+  .toggle input:checked + .toggle-track::after { transform: translateX(19px); background: var(--black); }
+
+  /* ── UPLOADS ── */
+  .uploads-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .upload-slot {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    aspect-ratio: 4/3;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .upload-slot:hover { border-color: var(--yellow); background: #1a1a0a; }
+  .upload-slot input[type=file] {
+    position: absolute; inset: 0; opacity: 0;
+    cursor: pointer; width: 100%; height: 100%;
+    border: none; padding: 0; background: none;
+  }
+  .upload-slot img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .upload-slot .remove-img {
+    position: absolute; top: 5px; right: 5px;
+    background: rgba(0,0,0,0.75); border: none; color: white;
+    border-radius: 50%; width: 22px; height: 22px;
+    font-size: 0.7rem; cursor: pointer;
+    display: none; align-items: center; justify-content: center; z-index: 2;
+  }
+  .upload-slot.has-img .remove-img { display: flex; }
+  .upload-icon { font-size: 1.6rem; margin-bottom: 5px; }
+  .upload-lbl { font-size: 0.7rem; color: #aaa; }
+
+  /* ── SIGNATURE ── */
+  .sig-wrapper {
+    position: relative;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    touch-action: none;
+  }
+  #sig-canvas { display: block; width: 100%; height: 148px; cursor: crosshair; }
+  .sig-clear {
+    position: absolute; top: 7px; right: 7px;
+    background: rgba(0,0,0,0.5); color: #fff; border: none;
+    border-radius: 5px; padding: 4px 10px;
+    font-size: 0.72rem; cursor: pointer;
+    font-family: 'Barlow', sans-serif;
+  }
+  .sig-hint {
+    text-align: center; font-size: 0.72rem;
+    color: #aaa; margin-top: 6px;
+  }
+
+  /* ── SEND BUTTON ── */
+  .send-btn {
+    width: 100%;
+    background: var(--yellow);
+    color: var(--black);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.35rem;
+    letter-spacing: 0.14em;
+    padding: 15px;
+    cursor: pointer;
+    margin-top: 28px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .send-btn:active { transform: scale(0.98); }
+  .send-btn:hover { background: var(--yellow-dim); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 22px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1a1a1a; border: 1px solid var(--border); color: var(--text);
+    padding: 11px 20px; border-radius: 8px; font-size: 0.88rem;
+    transition: transform 0.3s; z-index: 100;
+    white-space: nowrap; max-width: 92vw; text-align: center;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+</style>
+</head>
+<body>
+
+<header>
+  <img src="https://sandnesibk.no/images/logo.png" alt="" onerror="this.style.display='none'">
+  <div class="hdr-text">
+    <div class="hdr-club">Sandnes IBK</div>
+    <div class="hdr-sub">Refusjonsskjema</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── PROFILE ── -->
+  <div class="section-label">Din profil</div>
+  <div class="profile-strip">
+    <div class="row3">
+      <div class="field">
+        <label>Navn</label>
+        <input type="text" id="p-name" placeholder="Ditt navn" oninput="saveProfile()">
+      </div>
+      <div class="field">
+        <label>Lag</label>
+        <input type="text" id="p-team" placeholder="F.eks Sørbø G11" oninput="saveProfile()">
+      </div>
+      <div class="field">
+        <label>Kontonr.</label>
+        <input type="text" id="p-account" placeholder="1234.56.78901" inputmode="numeric" oninput="saveProfile()">
+      </div>
+    </div>
+    <div class="row2b">
+      <div class="field">
+        <label>Din e-post</label>
+        <input type="email" id="p-email" placeholder="din@epost.no" oninput="saveProfile()">
+      </div>
+
+    </div>
+    <div class="profile-hint">💾 Lagres automatisk på enheten din</div>
+  </div>
+
+  <!-- ── KAMP ── -->
+  <div class="section-label">Kampinfo</div>
+  <div class="card">
+    <div class="row2">
+      <div class="field">
+        <label>Dato</label>
+        <input type="date" id="match-date">
+      </div>
+      <div class="field">
+        <label>Motstander</label>
+        <input type="text" id="opponent" placeholder="f.eks. Stavanger">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DOMMERE ── -->
+  <div class="section-label">Dommere</div>
+  <div class="card">
+
+    <div class="ref-card">
+      <div class="ref-card-title">Dommer 1</div>
+      <div class="row2">
+        <div class="field">
+          <label>Navn</label>
+          <input type="text" id="ref1-name" placeholder="Fullt navn">
+        </div>
+        <div class="field">
+          <label>Beløp (NOK)</label>
+          <input type="number" id="ref1-amount" placeholder="0" inputmode="decimal">
+        </div>
+      </div>
+      <div class="coverage-row">
+        <label class="toggle">
+          <input type="checkbox" id="ref1-covers2" onchange="toggleRef2()">
+          <span class="toggle-track"></span>
+        </label>
+        <span>Dommer 1 betalte for begge – privat avregning mellom dommerne</span>
+      </div>
+    </div>
+
+    <div id="ref2-block" class="ref-card">
+      <div class="ref-card-title">Dommer 2</div>
+      <div class="row2">
+        <div class="field">
+          <label>Navn</label>
+          <input type="text" id="ref2-name" placeholder="Fullt navn">
+        </div>
+        <div class="field">
+          <label>Beløp (NOK)</label>
+          <input type="number" id="ref2-amount" placeholder="0" inputmode="decimal">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── KVITTERINGER ── -->
+  <div class="section-label">Kvitteringer</div>
+  <div class="card">
+    <div class="uploads-grid">
+      <div class="upload-slot" id="slot1">
+        <input type="file" accept="image/*" onchange="handleImage(event,'slot1')">
+        <div class="upload-icon">📷</div>
+        <div class="upload-lbl">Bilde 1</div>
+        <button class="remove-img" onclick="removeImage(event,'slot1')">✕</button>
+      </div>
+      <div class="upload-slot" id="slot2">
+        <input type="file" accept="image/*" onchange="handleImage(event,'slot2')">
+        <div class="upload-icon">📷</div>
+        <div class="upload-lbl">Bilde 2</div>
+        <button class="remove-img" onclick="removeImage(event,'slot2')">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SIGNATUR ── -->
+  <div class="section-label">Signatur</div>
+  <div class="card">
+    <div class="sig-wrapper">
+      <canvas id="sig-canvas"></canvas>
+      <button class="sig-clear" onclick="clearSig()">Slett</button>
+    </div>
+    <div class="sig-hint">Skriv under med fingeren</div>
+  </div>
+
+  <button class="send-btn" onclick="generateAndSend()">Last ned PDF →</button>
+
+</div><!-- /container -->
+
+
+<div id="toast"></div>
+
+<script>
+// ── PROFILE (auto-save) ───────────────────────────────────────────
+function saveProfile() {
+  ['p-name','p-team','p-account','p-email'].forEach(id => {
+    localStorage.setItem(id, document.getElementById(id).value);
+  });
+}
+function loadProfile() {
+  ['p-name','p-team','p-account','p-email'].forEach(id => {
+    document.getElementById(id).value = localStorage.getItem(id) || '';
+  });
+
+}
+
+// ── REF2 TOGGLE ──────────────────────────────────────────────────
+function toggleRef2() {
+  const c = document.getElementById('ref1-covers2').checked;
+  const b = document.getElementById('ref2-block');
+  b.style.opacity = c ? '0.3' : '1';
+  b.style.pointerEvents = c ? 'none' : '';
+  if (c) {
+    document.getElementById('ref2-name').value = '';
+    document.getElementById('ref2-amount').value = '';
+  }
+}
+
+// ── IMAGES ───────────────────────────────────────────────────────
+const imgs = { slot1: null, slot2: null };
+function handleImage(e, id) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    imgs[id] = ev.target.result;
+    const slot = document.getElementById(id);
+    let img = slot.querySelector('img');
+    if (!img) { img = document.createElement('img'); slot.appendChild(img); }
+    img.src = ev.target.result;
+    slot.classList.add('has-img');
+  };
+  r.readAsDataURL(file);
+}
+function removeImage(e, id) {
+  e.stopPropagation(); e.preventDefault();
+  imgs[id] = null;
+  const slot = document.getElementById(id);
+  const img = slot.querySelector('img'); if (img) img.remove();
+  slot.classList.remove('has-img');
+  slot.querySelector('input[type=file]').value = '';
+}
+
+// ── SIGNATURE ────────────────────────────────────────────────────
+const canvas = document.getElementById('sig-canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, hasSig = false;
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr, dpr);
+  ctx.strokeStyle = '#111';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+}
+function getP(e) {
+  const r = canvas.getBoundingClientRect();
+  const s = e.touches ? e.touches[0] : e;
+  return { x: s.clientX - r.left, y: s.clientY - r.top };
+}
+canvas.addEventListener('mousedown',  e => { drawing=true; ctx.beginPath(); const p=getP(e); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove',  e => { if(!drawing) return; const p=getP(e); ctx.lineTo(p.x,p.y); ctx.stroke(); hasSig=true; });
+canvas.addEventListener('mouseup',    () => drawing=false);
+canvas.addEventListener('mouseleave', () => drawing=false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; ctx.beginPath(); const p=getP(e); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!drawing) return; const p=getP(e); ctx.lineTo(p.x,p.y); ctx.stroke(); hasSig=true; }, {passive:false});
+canvas.addEventListener('touchend',   e => { e.preventDefault(); drawing=false; }, {passive:false});
+function clearSig() { resizeCanvas(); hasSig=false; }
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '–';
+  const [y,m,dd] = d.split('-');
+  return `${dd}.${m}.${y}`;
+}
+function fmtNOK(n) {
+  return n.toLocaleString('nb-NO') + ' kr';
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── PREVIEW ──────────────────────────────────────────────────────
+
+// ── GENERATE PDF + SEND ──────────────────────────────────────────
+async function generateAndSend() {
+  showToast('Bygger PDF…');
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W = 210, M = 18;
+
+  const name    = document.getElementById('p-name').value.trim();
+  const team    = document.getElementById('p-team').value.trim();
+  const acct    = document.getElementById('p-account').value.trim();
+  const email   = document.getElementById('p-email').value.trim();
+  const date    = document.getElementById('match-date').value;
+  const opp     = document.getElementById('opponent').value.trim();
+  const ref1n   = document.getElementById('ref1-name').value.trim();
+  const ref1a   = parseFloat(document.getElementById('ref1-amount').value)||0;
+  const cov2    = document.getElementById('ref1-covers2').checked;
+  const ref2n   = document.getElementById('ref2-name').value.trim();
+  const ref2a   = parseFloat(document.getElementById('ref2-amount').value)||0;
+  const total   = ref1a + (!cov2 && ref2n ? ref2a : 0);
+
+  // ── Header ──
+  doc.setFillColor(10,10,10);
+  doc.rect(0,0,W,32,'F');
+  doc.setFillColor(245,200,0);
+  doc.rect(0,29,W,3,'F');
+
+  try {
+    const b64 = await imgToB64('https://sandnesibk.no/images/logo.png');
+    doc.addImage(b64,'PNG', M, 6, 20, 20);
+  } catch(e) {}
+
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  doc.text('SANDNES INNEBANDYKLUBB', M+24, 16);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.setTextColor(245,200,0);
+  doc.text('REFUSJONSSKJEMA – DOMMERAVGIFT', M+24, 23);
+
+  // ── Field helper ──
+  const drawField = (lbl, val, x, y, w) => {
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+    doc.setTextColor(160,160,160);
+    doc.text(lbl.toUpperCase(), x, y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    doc.setTextColor(20,20,20);
+    doc.text(val||'–', x, y+5.5);
+    doc.setDrawColor(215,215,215);
+    doc.line(x, y+7.5, x+w, y+7.5);
+  };
+
+  let y = 44;
+  drawField('Treners navn', name, M, y, 80);
+  drawField('Lag / Gruppe', team||'–', M+88, y, 60);
+  drawField('Dato', fmtDate(date), M+156, y, 36);
+
+  y += 21;
+  drawField('Kontonummer', acct, M, y, 80);
+  drawField('E-post', email, M+88, y, 96);
+
+  y += 21;
+  drawField('Motstander', opp||'–', M, y, 60);
+  drawField('Sted / Arena', '–', M+68, y, 60);
+
+  // ── Ref table ──
+  y += 22;
+  doc.setFillColor(245,200,0);
+  doc.rect(M, y, W-M*2, 8,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.setTextColor(20,20,20);
+  doc.text('DOMMER', M+3, y+5.5);
+  doc.text('BESKRIVELSE', M+68, y+5.5);
+  doc.text('BELØP (NOK)', W-M-3, y+5.5, {align:'right'});
+
+  const refRow = (nm, desc, amt, ry) => {
+    doc.setDrawColor(210,210,210);
+    doc.rect(M, ry, W-M*2, 10);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+    doc.setTextColor(20,20,20);
+    doc.text(nm, M+3, ry+6.7);
+    doc.text(desc, M+68, ry+6.7);
+    doc.text(fmtNOK(amt), W-M-3, ry+6.7, {align:'right'});
+  };
+
+  y += 8;
+  refRow(ref1n, cov2?'Dommeravgift (dekket begge)':'Dommeravgift', ref1a, y);
+  y += 10;
+
+  if (!cov2 && ref2n) {
+    refRow(ref2n, 'Dommeravgift', ref2a, y);
+    y += 10;
+  }
+  if (cov2) {
+    doc.setFont('helvetica','italic'); doc.setFontSize(7.5);
+    doc.setTextColor(130,130,130);
+    doc.text('* Dommer 1 dekket begge – intern avregning mellom dommerne', M+3, y+5);
+    y += 12;
+  }
+
+  // Total row
+  doc.setFillColor(20,20,20);
+  doc.rect(M, y, W-M*2, 10,'F');
+  doc.setTextColor(245,200,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('TOTALT', M+3, y+6.8);
+  doc.text(fmtNOK(total), W-M-3, y+6.8, {align:'right'});
+
+  // ── Signature ──
+  y += 20;
+  doc.setFont('helvetica','bold'); doc.setFontSize(7);
+  doc.setTextColor(120,120,120);
+  doc.text('UNDERSKRIFT', M, y);
+  y += 4;
+  const sigData = canvas.toDataURL('image/png');
+  doc.addImage(sigData,'PNG', M, y, 74, 25);
+  doc.setDrawColor(200,200,200);
+  doc.rect(M, y, 74, 25);
+
+  y += 29;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.setTextColor(130,130,130);
+  doc.line(M, y, M+72, y);
+  doc.line(M+82, y, M+118, y);
+  doc.text(name, M, y+4);
+  doc.text(fmtDate(date), M+82, y+4);
+  doc.setFontSize(7);
+  doc.text('Treners underskrift', M, y+8);
+  doc.text('Dato', M+82, y+8);
+
+  // ── Receipt images ──
+  const imgKeys = ['slot1','slot2'].filter(k => imgs[k]);
+  if (imgKeys.length) {
+    doc.addPage();
+    doc.setFillColor(10,10,10); doc.rect(0,0,W,14,'F');
+    doc.setFillColor(245,200,0); doc.rect(0,11,W,3,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text('KVITTERINGER', M, 9);
+
+    let iy = 22;
+    for (const k of imgKeys) {
+      try {
+        const pr = doc.getImageProperties(imgs[k]);
+        const mw = W-M*2, mh = 120;
+        const ratio = Math.min(mw/pr.width, mh/pr.height);
+        doc.addImage(imgs[k],'JPEG', M, iy, pr.width*ratio, pr.height*ratio);
+        iy += pr.height*ratio + 10;
+      } catch(e){}
+    }
+  }
+
+  // ── Save PDF ──
+  const fname = `Refusjon_${team||'IBK'}_${date||'udatert'}.pdf`;
+  // Manual blob download — works reliably on mobile browsers
+  const pdfBlob = doc.output('blob');
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 1000);
+
+  showToast('PDF lastet ned ✓');
+}
+
+// ── IMG TO BASE64 ─────────────────────────────────────────────────
+function imgToB64(url) {
+  return new Promise((res, rej) => {
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+      res(c.toDataURL('image/png'));
+    };
+    img.onerror = rej;
+    img.src = url;
+  });
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+  loadProfile();
+  resizeCanvas();
+  if (!localStorage.getItem('p-name')) {
+    setTimeout(() => showToast('👆 Fyll inn din profil øverst – lagres automatisk'), 900);
+  }
+});
+window.addEventListener('resize', resizeCanvas);
+</script>
+</body>
+</html>
