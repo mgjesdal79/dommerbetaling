@@ -295,6 +295,18 @@ select {
 /* ── ACTIONS ── */
 .actions { display: flex; flex-direction: column; gap: 12px; }
 .actions .send-btn { margin-top: 12px; }
+.share-hint {
+  margin: 4px 0 0; text-align: center;
+  color: var(--muted); font-size: 0.82rem;
+}
+.share-hint[hidden] { display: none; }
+
+/* ── BUILD ── */
+.build {
+  text-align: center; color: #555;
+  font-size: 0.72rem; letter-spacing: 0.04em;
+  padding: 14px 0 calc(16px + env(safe-area-inset-bottom));
+}
 
 /* ── PREVIEW OVERLAY ── */
 .overlay {
