@@ -236,14 +236,8 @@ function imgToB64(url) {
 }
 
 // ── GENERATE PDF + SAVE ──────────────────────────────────────────
-async function generateAndSend() {
-  if (!validateForm()) return;
-
-  const btn = document.querySelector('.send-btn');
-  btn.disabled = true;
-  showToast('Bygger PDF…');
-
-  try {
+// Bygger PDF-dokumentet og returnerer { blob, fname }. Validering gjøres av kalleren.
+async function buildPdf() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:'mm', format:'a4' });
     const W = 210, M = 18;
@@ -391,22 +385,101 @@ async function generateAndSend() {
       }
     }
 
-    // ── Save PDF ──
     const fname = `Refusjon_${team||'IBK'}_${date||'udatert'}.pdf`;
-    const pdfBlob = doc.output('blob');
-    const blobUrl = URL.createObjectURL(pdfBlob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = fname;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 1000);
+    const blob = doc.output('blob');
+    return { blob, fname };
+}
 
-    showToast('PDF lastet ned ✓');
+// ── OUTPUT: forhåndsvis / last ned / del ─────────────────────────
+const RECIPIENT = 'kasserer@sandnesibk.no';
+let previewUrl = null, previewFname = null;
+
+function revokePreview() {
+  if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; previewFname = null; }
+}
+
+function downloadBlob(blob, fname) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+}
+
+async function openPreview() {
+  if (!validateForm()) return;
+  showToast('Bygger PDF…');
+  try {
+    const { blob, fname } = await buildPdf();
+    revokePreview();
+    previewUrl = URL.createObjectURL(blob);
+    previewFname = fname;
+    document.getElementById('preview-frame').src = previewUrl;
+    document.getElementById('preview-overlay').hidden = false;
+    document.body.style.overflow = 'hidden';
   } catch (err) {
     showToast('Noe gikk galt ved generering', true);
-  } finally {
-    btn.disabled = false;
+  }
+}
+
+function closePreview() {
+  document.getElementById('preview-overlay').hidden = true;
+  document.getElementById('preview-frame').src = 'about:blank';
+  document.body.style.overflow = '';
+  revokePreview();
+}
+
+// Last ned den allerede-byggede PDF-en fra forhåndsvisningen (bygger ikke på nytt).
+function downloadCurrentPreview() {
+  if (!previewUrl) return;
+  const a = document.createElement('a');
+  a.href = previewUrl; a.download = previewFname;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => document.body.removeChild(a), 0);
+  showToast('PDF lastet ned ✓');
+}
+
+async function sharePdf() {
+  if (!validateForm()) return;
+  showToast('Bygger PDF…');
+  let blob, fname;
+  try {
+    ({ blob, fname } = await buildPdf());
+  } catch (err) {
+    showToast('Noe gikk galt ved generering', true);
+    return;
+  }
+  const file = new File([blob], fname, { type: 'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'Refusjon dommerutgifter',
+        text: `Refusjon dommerutgifter – Sandnes IBK.\nSendes til: ${RECIPIENT}`,
+      });
+      showToast('Delt ✓');
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;   // bruker avbrøt – ingen feil
+      downloadBlob(blob, fname);
+      showToast('Kunne ikke dele – PDF-en er lastet ned i stedet', true);
+    }
+  } else {
+    // Web Share for filer ikke støttet (typisk desktop)
+    downloadBlob(blob, fname);
+    showToast('Nettleseren støtter ikke direkte deling – PDF-en er lastet ned, legg den ved manuelt');
+  }
+}
+
+async function copyRecipient() {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(RECIPIENT);
+      showToast('Adresse kopiert ✓');
+    } else {
+      window.prompt('Kopier e-postadressen:', RECIPIENT);
+    }
+  } catch (err) {
+    window.prompt('Kopier e-postadressen:', RECIPIENT);
   }
 }
 
@@ -418,5 +491,9 @@ on(document, 'DOMContentLoaded', () => {
   if (!localStorage.getItem('p-name')) {
     setTimeout(() => showToast('👆 Fyll inn din profil øverst – lagres automatisk'), 900);
   }
+  // Lukk forhåndsvisning ved klikk på bakgrunn eller ESC
+  const ov = document.getElementById('preview-overlay');
+  on(ov, 'click', (e) => { if (e.target === ov) closePreview(); });
+  on(document, 'keydown', (e) => { if (e.key === 'Escape' && !ov.hidden) closePreview(); });
 });
 on(window, 'resize', resizeCanvas);

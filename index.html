@@ -123,9 +123,32 @@
     <div class="sig-hint">Skriv under med fingeren</div>
   </div>
 
-  <button class="send-btn" onclick="generateAndSend()">Last ned PDF →</button>
+  <div class="recipient">
+    <span class="recipient-label">Sendes til</span>
+    <span class="recipient-addr" id="recipient-addr">kasserer@sandnesibk.no</span>
+    <button type="button" class="copy-btn" onclick="copyRecipient()">Kopier</button>
+  </div>
+
+  <div class="actions">
+    <button class="send-btn secondary" onclick="openPreview()">Forhåndsvis</button>
+    <button class="send-btn" onclick="sharePdf()">Send direkte på e-post →</button>
+  </div>
 
 </div><!-- /container -->
+
+<div id="preview-overlay" class="overlay" hidden>
+  <div class="overlay-box">
+    <div class="overlay-head">
+      <span>Forhåndsvisning</span>
+      <button type="button" class="overlay-close" onclick="closePreview()" aria-label="Lukk">✕</button>
+    </div>
+    <iframe id="preview-frame" title="Forhåndsvisning av PDF"></iframe>
+    <div class="overlay-actions">
+      <button class="send-btn secondary" onclick="downloadCurrentPreview()">Last ned</button>
+      <button class="send-btn" onclick="sharePdf()">Send direkte på e-post →</button>
+    </div>
+  </div>
+</div>
 
 
 <div id="toast"></div>
