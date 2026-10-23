@@ -450,7 +450,10 @@ async function sharePdf() {
     return;
   }
   const file = new File([blob], fname, { type: 'application/pdf' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+  // Begrens direkte deling til touch-enheter (mobil/nettbrett). macOS/desktop Safari svarer «ja»
+  // på canShare({files}), men ruter delingen til systemet (Siri-/opplåsingsprompt) → upålitelig.
+  const isTouch = (navigator.maxTouchPoints || 0) > 0;
+  if (isTouch && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
         files: [file],
@@ -464,9 +467,9 @@ async function sharePdf() {
       showToast('Kunne ikke dele – PDF-en er lastet ned i stedet', true);
     }
   } else {
-    // Web Share for filer ikke støttet (typisk desktop)
+    // Desktop / ingen Web Share for filer: last ned og la bruker legge ved i e-post selv
     downloadBlob(blob, fname);
-    showToast('Nettleseren støtter ikke direkte deling – PDF-en er lastet ned, legg den ved manuelt');
+    showToast('På datamaskin: PDF-en er lastet ned – legg den ved e-posten til ' + RECIPIENT);
   }
 }
 
