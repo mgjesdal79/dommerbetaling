@@ -498,5 +498,19 @@ on(document, 'DOMContentLoaded', () => {
   const ov = document.getElementById('preview-overlay');
   on(ov, 'click', (e) => { if (e.target === ov) closePreview(); });
   on(document, 'keydown', (e) => { if (e.key === 'Escape' && !ov.hidden) closePreview(); });
+
+  // Enhetstilpasning: direkte deling kun på touch (mobil/nettbrett). Desktop → last ned.
+  if ((navigator.maxTouchPoints || 0) === 0) {
+    const sb = document.getElementById('share-btn');
+    if (sb) sb.textContent = 'Last ned PDF';
+    const sh = document.getElementById('share-hint');
+    if (sh) sh.hidden = false;
+    const osb = document.getElementById('overlay-share-btn');
+    if (osb) osb.hidden = true;   // overlay har allerede «Last ned»
+  }
+
+  // Build-nummer i footer
+  const b = document.getElementById('build');
+  if (b && window.APP_VERSION) b.textContent = 'build ' + window.APP_VERSION + ' · ' + window.APP_BUILD;
 });
 on(window, 'resize', resizeCanvas);

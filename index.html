@@ -131,7 +131,8 @@
 
   <div class="actions">
     <button class="send-btn secondary" onclick="openPreview()">Forhåndsvis</button>
-    <button class="send-btn" onclick="sharePdf()">Send direkte på e-post →</button>
+    <button class="send-btn" id="share-btn" onclick="sharePdf()">Send direkte på e-post →</button>
+    <p class="share-hint" id="share-hint" hidden>Send direkte på e-post er kun tilgjengelig på mobil</p>
   </div>
 
 </div><!-- /container -->
@@ -145,7 +146,7 @@
     <iframe id="preview-frame" title="Forhåndsvisning av PDF"></iframe>
     <div class="overlay-actions">
       <button class="send-btn secondary" onclick="downloadCurrentPreview()">Last ned</button>
-      <button class="send-btn" onclick="sharePdf()">Send direkte på e-post →</button>
+      <button class="send-btn" id="overlay-share-btn" onclick="sharePdf()">Send direkte på e-post →</button>
     </div>
   </div>
 </div>
@@ -153,6 +154,13 @@
 
 <div id="toast"></div>
 
+<footer class="build" id="build"></footer>
+
+<script>
+  // Build-nummer – bump manuelt ved hver deploy (øk APP_VERSION +1, sett dagens dato)
+  window.APP_VERSION = '1';
+  window.APP_BUILD = '2026-10-23';
+</script>
 <script src="app.js"></script>
 </body>
 </html>
